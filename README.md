@@ -68,11 +68,11 @@ go mod download
 # Test ALTER TABLE ADD COLUMN (switches to feature branch automatically)
 make test-alter-add-column
 
+# Test main branch functionality (ensures main branch is used)
+make test-main
+
 # Reset to main branch after testing
 make reset-to-main
-
-# Test library integration
-make test-library
 ```
 
 ## Development
