@@ -65,6 +65,9 @@ go mod download
 
 ### Testing
 ```bash
+# Run all tests (main branch + ALTER TABLE features + reset)
+make test-all
+
 # Test ALTER TABLE ADD COLUMN (switches to feature branch automatically)
 make test-alter-add-column
 

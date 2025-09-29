@@ -8,6 +8,22 @@
 # 4. Automatic branch switching to the correct feature branch
 # =============================================================================
 
+# Run all tests
+test-all:
+	@echo "Running all tests..."
+	@echo "=========================================="
+	@echo "1. Testing main branch..."
+	@$(MAKE) test-main
+	@echo ""
+	@echo "2. Testing ALTER TABLE ADD COLUMN..."
+	@$(MAKE) test-alter-add-column
+	@echo ""
+	@echo "3. Resetting to main branch..."
+	@$(MAKE) reset-to-main
+	@echo ""
+	@echo "=========================================="
+	@echo "All tests completed successfully!"
+
 # Test BQE ALTER TABLE ADD COLUMN functionality
 test-alter-add-column:
 	@echo "Testing BQE ALTER TABLE ADD COLUMN functionality..."
@@ -40,5 +56,5 @@ reset-to-main:
 	@echo "Switching go-zetasqlite back to main branch..."
 	cd go-zetasqlite && git checkout main
 
-.PHONY: test-alter-add-column test-main reset-to-main
+.PHONY: test-all test-alter-add-column test-main reset-to-main
 
