@@ -40,19 +40,19 @@ test-all:
 # =============================================================================
 
 # Test ALTER TABLE ADD COLUMN on feature branch
-test-add-column:
+test-alter-table-add-column:
 	@echo "Testing ALTER TABLE ADD COLUMN on feature branch..."
 	@echo "Switching to feat/alter-table-add-column branch..."
 	cd go-zetasqlite && git checkout feat/alter-table-add-column
 	@echo "Running ALTER TABLE ADD COLUMN test..."
-	CGO_ENABLED=1 CXX=clang++ go run test_alter_add_column.go
+	CGO_ENABLED=1 CXX=clang++ go run test_alter_table_add_column.go
 
 # Template for future features:
-# test-<feature>:
+# test-alter-table-<feature>:
 # 	@echo "Testing ALTER TABLE <FEATURE> on feature branch..."
 # 	@echo "Switching to feat/alter-table-<feature> branch..."
 # 	cd go-zetasqlite && git checkout feat/alter-table-<feature>
 # 	@echo "Running ALTER TABLE <FEATURE> test..."
-# 	CGO_ENABLED=1 CXX=clang++ go run test_alter_<feature>.go
+# 	CGO_ENABLED=1 CXX=clang++ go run test_alter_table_<feature>.go
 
-.PHONY: test-all test-add-column
+.PHONY: test-all test-alter-table-add-column

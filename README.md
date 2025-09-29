@@ -69,7 +69,7 @@ go mod download
 make test-all
 
 # Quick test individual features on their feature branches
-make test-add-column
+make test-alter-table-add-column
 ```
 
 **Comprehensive Testing (`test-all`):**
@@ -77,10 +77,15 @@ make test-add-column
 - Runs all test_*.go files
 - Shows which features are merged (✓) vs not merged (❌)
 
-**Feature-Specific Testing (`test-<feature>`):**
-- Switches to specific feature branch
-- Runs specific test file
+**Feature-Specific Testing (`test-alter-table-<feature>`):**
+- Switches to specific feature branch (`feat/alter-table-<feature>`)
+- Runs specific test file (`test_alter_table_<feature>.go`)
 - Perfect for development and quick verification
+
+**Naming Convention:**
+- Test file: `test_alter_table_<feature>.go`
+- Make target: `test-alter-table-<feature>`
+- Branch name: `feat/alter-table-<feature>`
 
 ## Development
 
@@ -94,7 +99,7 @@ make test-add-column
 - `go-zetasqlite/internal/stmt_action.go` - Core ALTER TABLE logic
 - `go-zetasqlite/internal/spec.go` - Type definitions
 - `go-zetasqlite/internal/analyzer.go` - SQL parsing and analysis
-- `test_alter_add_column.go` - ALTER TABLE ADD COLUMN integration tests
+- `test_alter_table_add_column.go` - ALTER TABLE ADD COLUMN integration tests
 - `Makefile` - Automated testing with branch management
 
 ## Submodules
