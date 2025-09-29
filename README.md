@@ -65,18 +65,14 @@ go mod download
 
 ### Testing
 ```bash
-# Run all tests (main branch + ALTER TABLE features + reset)
+# Run all tests on main branch to verify merged features
 make test-all
-
-# Test ALTER TABLE ADD COLUMN (switches to feature branch automatically)
-make test-alter-add-column
-
-# Test main branch functionality (ensures main branch is used)
-make test-main
-
-# Reset to main branch after testing
-make reset-to-main
 ```
+
+This single command will:
+- Switch go-zetasqlite to main branch
+- Run all test_*.go files
+- Show which features are merged (✓) vs not merged (❌)
 
 ## Development
 
