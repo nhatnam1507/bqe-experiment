@@ -41,10 +41,8 @@ test-alter-add-column:
 # 	CGO_ENABLED=1 CXX=clang++ go run test_alter_<feature>.go
 
 # Test main branch functionality
-test-main:
+test-main: reset-to-main
 	@echo "Testing main branch functionality..."
-	@echo "Ensuring go-zetasqlite is on main branch..."
-	cd go-zetasqlite && git checkout main
 	@echo "Verifying main branch is clean and functional..."
 	@echo "✓ go-zetasqlite is on main branch"
 	@echo "✓ Main branch does not contain ALTER TABLE functionality (as expected)"
