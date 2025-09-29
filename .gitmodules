@@ -1,0 +1,6 @@
+[submodule "go-zetasqlite"]
+	path = go-zetasqlite
+	url = git@github.com:nhatnam1507/go-zetasqlite.git
+[submodule "bigquery-emulator"]
+	path = bigquery-emulator
+	url = git@github.com:nhatnam1507/bigquery-emulator.git
