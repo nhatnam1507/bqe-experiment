@@ -65,11 +65,14 @@ go mod download
 
 ### Testing
 ```bash
-# Run all tests
-make test-bqe
+# Test ALTER TABLE ADD COLUMN (switches to feature branch automatically)
+make test-alter-add-column
 
-# Run specific test
-go run test_bqe_alter.go
+# Reset to main branch after testing
+make reset-to-main
+
+# Test library integration
+make test-library
 ```
 
 ## Development
@@ -84,7 +87,8 @@ go run test_bqe_alter.go
 - `go-zetasqlite/internal/stmt_action.go` - Core ALTER TABLE logic
 - `go-zetasqlite/internal/spec.go` - Type definitions
 - `go-zetasqlite/internal/analyzer.go` - SQL parsing and analysis
-- `test_bqe_alter.go` - Integration tests
+- `test_alter_add_column.go` - ALTER TABLE ADD COLUMN integration tests
+- `Makefile` - Automated testing with branch management
 
 ## Submodules
 
