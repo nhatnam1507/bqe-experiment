@@ -30,4 +30,29 @@ test-all:
 	@echo "✓ Successful tests = features are merged"
 	@echo "❌ Failed tests = features are not merged"
 
-.PHONY: test-all
+# =============================================================================
+# FEATURE-SPECIFIC TESTING - Quick test individual features on their branches
+# =============================================================================
+# These targets:
+# 1. Switch to the specific feature branch
+# 2. Run the specific test file
+# 3. Perfect for development and quick verification
+# =============================================================================
+
+# Test ALTER TABLE ADD COLUMN on feature branch
+test-add-column:
+	@echo "Testing ALTER TABLE ADD COLUMN on feature branch..."
+	@echo "Switching to feat/alter-table-add-column branch..."
+	cd go-zetasqlite && git checkout feat/alter-table-add-column
+	@echo "Running ALTER TABLE ADD COLUMN test..."
+	CGO_ENABLED=1 CXX=clang++ go run test_alter_add_column.go
+
+# Template for future features:
+# test-<feature>:
+# 	@echo "Testing ALTER TABLE <FEATURE> on feature branch..."
+# 	@echo "Switching to feat/alter-table-<feature> branch..."
+# 	cd go-zetasqlite && git checkout feat/alter-table-<feature>
+# 	@echo "Running ALTER TABLE <FEATURE> test..."
+# 	CGO_ENABLED=1 CXX=clang++ go run test_alter_<feature>.go
+
+.PHONY: test-all test-add-column

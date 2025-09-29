@@ -67,12 +67,20 @@ go mod download
 ```bash
 # Run all tests on main branch to verify merged features
 make test-all
+
+# Quick test individual features on their feature branches
+make test-add-column
 ```
 
-This single command will:
-- Switch go-zetasqlite to main branch
-- Run all test_*.go files
-- Show which features are merged (✓) vs not merged (❌)
+**Comprehensive Testing (`test-all`):**
+- Switches go-zetasqlite to main branch
+- Runs all test_*.go files
+- Shows which features are merged (✓) vs not merged (❌)
+
+**Feature-Specific Testing (`test-<feature>`):**
+- Switches to specific feature branch
+- Runs specific test file
+- Perfect for development and quick verification
 
 ## Development
 
