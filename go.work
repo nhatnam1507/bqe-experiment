@@ -3,6 +3,9 @@ go 1.21.5
 use (
 	./bigquery-emulator
 	./go-zetasqlite
+	./testing
 )
 
 replace github.com/goccy/go-zetasqlite v0.19.3 => ./go-zetasqlite
+
+replace github.com/goccy/bigquery-emulator v0.0.0-00010101000000-000000000000 => ./bigquery-emulator

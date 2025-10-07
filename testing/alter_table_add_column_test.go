@@ -1,9 +1,8 @@
-package main
+package testing
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"testing"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/goccy/bigquery-emulator/server"
@@ -12,7 +11,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func main() {
+func TestAlterTableAddColumn(t *testing.T) {
 	ctx := context.Background()
 	const (
 		projectID = "test"
@@ -23,17 +22,17 @@ func main() {
 	// Use dots for table names (BigQuery standard format)
 	tableName := projectID + "." + datasetID + "." + tableID
 
-	fmt.Println("=== Testing ALTER TABLE ADD COLUMN with BigQuery Emulator ===")
+	t.Log("=== Testing ALTER TABLE ADD COLUMN with BigQuery Emulator ===")
 
 	// Create BigQuery Emulator server
-	fmt.Println("\n1. Creating BigQuery Emulator server...")
+	t.Log("1. Creating BigQuery Emulator server...")
 	bqServer, err := server.New(server.TempStorage)
 	if err != nil {
-		log.Fatalf("Failed to create BQE server: %v", err)
+		t.Fatalf("Failed to create BQE server: %v", err)
 	}
 
 	// Load initial data
-	fmt.Println("\n2. Loading initial project and dataset...")
+	t.Log("2. Loading initial project and dataset...")
 	if err := bqServer.Load(
 		server.StructSource(
 			types.NewProject(
@@ -42,11 +41,11 @@ func main() {
 			),
 		),
 	); err != nil {
-		log.Fatalf("Failed to load initial data: %v", err)
+		t.Fatalf("Failed to load initial data: %v", err)
 	}
 
 	if err := bqServer.SetProject(projectID); err != nil {
-		log.Fatalf("Failed to set project: %v", err)
+		t.Fatalf("Failed to set project: %v", err)
 	}
 
 	// Create test server
@@ -54,7 +53,7 @@ func main() {
 	defer testServer.Close()
 
 	// Create BigQuery client
-	fmt.Println("\n3. Creating BigQuery client...")
+	t.Log("3. Creating BigQuery client...")
 	client, err := bigquery.NewClient(
 		ctx,
 		projectID,
@@ -62,12 +61,12 @@ func main() {
 		option.WithoutAuthentication(),
 	)
 	if err != nil {
-		log.Fatalf("Failed to create BigQuery client: %v", err)
+		t.Fatalf("Failed to create BigQuery client: %v", err)
 	}
 	defer client.Close()
 
 	// Create initial table
-	fmt.Println("\n4. Creating initial table...")
+	t.Log("4. Creating initial table...")
 	createTableSQL := `
 CREATE TABLE ` + "`" + tableName + "`" + ` (
     id INT64,
@@ -75,116 +74,117 @@ CREATE TABLE ` + "`" + tableName + "`" + ` (
 )`
 	job, err := client.Query(createTableSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create table: %v", err)
+		t.Fatalf("Failed to create table: %v", err)
 	}
 	status, err := job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for table creation: %v", err)
+		t.Fatalf("Failed to wait for table creation: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Table creation failed: %v", err)
+		t.Fatalf("Table creation failed: %v", err)
 	}
-	fmt.Println("✓ Table created successfully")
+	t.Log("✓ Table created successfully")
 
 	// Insert test data
-	fmt.Println("\n5. Inserting test data...")
+	t.Log("5. Inserting test data...")
 	insertSQL := `
 INSERT INTO ` + "`" + tableName + "`" + ` (id, name) 
 VALUES (1, 'Alice'), (2, 'Bob')`
 	job, err = client.Query(insertSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to insert data: %v", err)
+		t.Fatalf("Failed to insert data: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for insert: %v", err)
+		t.Fatalf("Failed to wait for insert: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Insert failed: %v", err)
+		t.Fatalf("Insert failed: %v", err)
 	}
-	fmt.Println("✓ Data inserted successfully")
+	t.Log("✓ Data inserted successfully")
 
 	// Execute ALTER TABLE ADD COLUMN using BigQuery client
-	fmt.Println("\n6. Executing ALTER TABLE ADD COLUMN via BigQuery client...")
+	t.Log("6. Executing ALTER TABLE ADD COLUMN via BigQuery client...")
 	alterSQL := `ALTER TABLE ` + "`" + tableName + "`" + ` ADD COLUMN age INT64`
-	fmt.Printf("Executing: %s\n", alterSQL)
+	t.Logf("Executing: %s", alterSQL)
 	job, err = client.Query(alterSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to execute ALTER TABLE: %v", err)
+		t.Fatalf("Failed to execute ALTER TABLE: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for ALTER TABLE: %v", err)
+		t.Fatalf("Failed to wait for ALTER TABLE: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("ALTER TABLE failed: %v", err)
+		t.Fatalf("ALTER TABLE failed: %v", err)
 	}
-	fmt.Println("✓ Column added successfully via BigQuery client")
+	t.Log("✓ Column added successfully via BigQuery client")
 
 	// Verify the schema change by querying data
-	fmt.Println("\n7. Verifying schema change...")
+	t.Log("7. Verifying schema change...")
 	querySQL := `SELECT * FROM ` + "`" + tableName + "`" + ` ORDER BY id`
 	it, err := client.Query(querySQL).Read(ctx)
 	if err != nil {
-		log.Fatalf("Failed to query data after alter: %v", err)
+		t.Fatalf("Failed to query data after alter: %v", err)
 	}
 
-	fmt.Println("Data after ALTER TABLE:")
+	t.Log("Data after ALTER TABLE:")
 	for {
 		var row []bigquery.Value
 		if err := it.Next(&row); err != nil {
 			if err == iterator.Done {
 				break
 			}
-			log.Fatalf("Failed to read row: %v", err)
+			t.Fatalf("Failed to read row: %v", err)
 		}
 		if len(row) >= 3 {
-			fmt.Printf("  ID: %v, Name: %v, Age: %v\n", row[0], row[1], row[2])
+			t.Logf("  ID: %v, Name: %v, Age: %v", row[0], row[1], row[2])
 		} else {
-			fmt.Printf("  ID: %v, Name: %v, Age: NULL\n", row[0], row[1])
+			t.Logf("  ID: %v, Name: %v, Age: NULL", row[0], row[1])
 		}
 	}
 
 	// Insert new data with the age column
-	fmt.Println("\n8. Inserting new data with age column...")
+	t.Log("8. Inserting new data with age column...")
 	insertWithAgeSQL := `
 INSERT INTO ` + "`" + tableName + "`" + ` (id, name, age) 
 VALUES (3, 'Charlie', 25)`
 	job, err = client.Query(insertWithAgeSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to insert data with age: %v", err)
+		t.Fatalf("Failed to insert data with age: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for insert with age: %v", err)
+		t.Fatalf("Failed to wait for insert with age: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Insert with age failed: %v", err)
+		t.Fatalf("Insert with age failed: %v", err)
 	}
-	fmt.Println("✓ New data inserted successfully")
+	t.Log("✓ New data inserted successfully")
 
 	// Final verification
-	fmt.Println("\n9. Final verification...")
+	t.Log("9. Final verification...")
 	it, err = client.Query(querySQL).Read(ctx)
 	if err != nil {
-		log.Fatalf("Failed to query final data: %v", err)
+		t.Fatalf("Failed to query final data: %v", err)
 	}
 
-	fmt.Println("Final data:")
+	t.Log("Final data:")
 	for {
 		var row []bigquery.Value
 		if err := it.Next(&row); err != nil {
 			if err == iterator.Done {
 				break
 			}
-			log.Fatalf("Failed to read row: %v", err)
+			t.Fatalf("Failed to read row: %v", err)
 		}
 		if len(row) >= 3 {
-			fmt.Printf("  ID: %v, Name: %v, Age: %v\n", row[0], row[1], row[2])
+			t.Logf("  ID: %v, Name: %v, Age: %v", row[0], row[1], row[2])
 		} else {
-			fmt.Printf("  ID: %v, Name: %v, Age: NULL\n", row[0], row[1])
+			t.Logf("  ID: %v, Name: %v, Age: NULL", row[0], row[1])
 		}
 	}
 
-	fmt.Println("\n=== ALTER TABLE ADD COLUMN test completed successfully! ===")
+	t.Log("=== ALTER TABLE ADD COLUMN test completed successfully! ===")
 }
+

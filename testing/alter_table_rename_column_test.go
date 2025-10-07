@@ -1,9 +1,8 @@
-package main
+package testing
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"testing"
 
 	"cloud.google.com/go/bigquery"
 	"github.com/goccy/bigquery-emulator/server"
@@ -12,7 +11,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func main() {
+func TestAlterTableRenameColumn(t *testing.T) {
 	ctx := context.Background()
 	const (
 		projectID = "test"
@@ -23,17 +22,17 @@ func main() {
 	// Use dots for table names (BigQuery standard format)
 	tableName := projectID + "." + datasetID + "." + tableID
 
-	fmt.Println("=== Testing ALTER TABLE RENAME COLUMN with BigQuery Emulator ===")
+	t.Log("=== Testing ALTER TABLE RENAME COLUMN with BigQuery Emulator ===")
 
 	// Create BigQuery Emulator server
-	fmt.Println("\n1. Creating BigQuery Emulator server...")
+	t.Log("1. Creating BigQuery Emulator server...")
 	bqServer, err := server.New(server.TempStorage)
 	if err != nil {
-		log.Fatalf("Failed to create BQE server: %v", err)
+		t.Fatalf("Failed to create BQE server: %v", err)
 	}
 
 	// Load initial data
-	fmt.Println("\n2. Loading initial project and dataset...")
+	t.Log("2. Loading initial project and dataset...")
 	if err := bqServer.Load(
 		server.StructSource(
 			types.NewProject(
@@ -42,11 +41,11 @@ func main() {
 			),
 		),
 	); err != nil {
-		log.Fatalf("Failed to load initial data: %v", err)
+		t.Fatalf("Failed to load initial data: %v", err)
 	}
 
 	if err := bqServer.SetProject(projectID); err != nil {
-		log.Fatalf("Failed to set project: %v", err)
+		t.Fatalf("Failed to set project: %v", err)
 	}
 
 	// Create test server
@@ -54,7 +53,7 @@ func main() {
 	defer testServer.Close()
 
 	// Create BigQuery client
-	fmt.Println("\n3. Creating BigQuery client...")
+	t.Log("3. Creating BigQuery client...")
 	client, err := bigquery.NewClient(
 		ctx,
 		projectID,
@@ -62,12 +61,12 @@ func main() {
 		option.WithoutAuthentication(),
 	)
 	if err != nil {
-		log.Fatalf("Failed to create BigQuery client: %v", err)
+		t.Fatalf("Failed to create BigQuery client: %v", err)
 	}
 	defer client.Close()
 
 	// Create initial table
-	fmt.Println("\n4. Creating initial table...")
+	t.Log("4. Creating initial table...")
 	createTableSQL := `
 CREATE TABLE ` + "`" + tableName + "`" + ` (
     id INT64,
@@ -76,117 +75,118 @@ CREATE TABLE ` + "`" + tableName + "`" + ` (
 )`
 	job, err := client.Query(createTableSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create table: %v", err)
+		t.Fatalf("Failed to create table: %v", err)
 	}
 	status, err := job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for table creation: %v", err)
+		t.Fatalf("Failed to wait for table creation: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Table creation failed: %v", err)
+		t.Fatalf("Table creation failed: %v", err)
 	}
-	fmt.Println("✓ Table created successfully")
+	t.Log("✓ Table created successfully")
 
 	// Insert test data
-	fmt.Println("\n5. Inserting test data...")
+	t.Log("5. Inserting test data...")
 	insertSQL := `
 INSERT INTO ` + "`" + tableName + "`" + ` (id, name, email) 
 VALUES (1, 'Alice', 'alice@example.com'), (2, 'Bob', 'bob@example.com')`
 	job, err = client.Query(insertSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to insert data: %v", err)
+		t.Fatalf("Failed to insert data: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for insert: %v", err)
+		t.Fatalf("Failed to wait for insert: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Insert failed: %v", err)
+		t.Fatalf("Insert failed: %v", err)
 	}
-	fmt.Println("✓ Data inserted successfully")
+	t.Log("✓ Data inserted successfully")
 
 	// Execute ALTER TABLE RENAME COLUMN using BigQuery client
-	fmt.Println("\n6. Executing ALTER TABLE RENAME COLUMN via BigQuery client...")
+	t.Log("6. Executing ALTER TABLE RENAME COLUMN via BigQuery client...")
 	alterSQL := `ALTER TABLE ` + "`" + tableName + "`" + ` RENAME COLUMN ` + "`" + `name` + "`" + ` TO ` + "`" + `full_name` + "`"
-	fmt.Printf("Executing: %s\n", alterSQL)
+	t.Logf("Executing: %s", alterSQL)
 	job, err = client.Query(alterSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to execute ALTER TABLE: %v", err)
+		t.Fatalf("Failed to execute ALTER TABLE: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for ALTER TABLE: %v", err)
+		t.Fatalf("Failed to wait for ALTER TABLE: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("ALTER TABLE failed: %v", err)
+		t.Fatalf("ALTER TABLE failed: %v", err)
 	}
-	fmt.Println("✓ Column renamed successfully via BigQuery client")
+	t.Log("✓ Column renamed successfully via BigQuery client")
 
 	// Verify the column was renamed by querying with the new column name
-	fmt.Println("\n7. Verifying column rename...")
+	t.Log("7. Verifying column rename...")
 	querySQL := `SELECT id, full_name, email FROM ` + "`" + tableName + "`" + ` ORDER BY id`
 	it, err := client.Query(querySQL).Read(ctx)
 	if err != nil {
-		log.Fatalf("Failed to query table with renamed column: %v", err)
+		t.Fatalf("Failed to query table with renamed column: %v", err)
 	}
 
-	fmt.Println("Data from table with renamed column:")
+	t.Log("Data from table with renamed column:")
 	for {
 		var row []bigquery.Value
 		if err := it.Next(&row); err != nil {
 			if err == iterator.Done {
 				break
 			}
-			log.Fatalf("Failed to read row: %v", err)
+			t.Fatalf("Failed to read row: %v", err)
 		}
-		fmt.Printf("  ID: %v, Full Name: %v, Email: %v\n", row[0], row[1], row[2])
+		t.Logf("  ID: %v, Full Name: %v, Email: %v", row[0], row[1], row[2])
 	}
 
 	// Verify the old column name no longer exists
-	fmt.Println("\n8. Verifying old column name no longer exists...")
+	t.Log("8. Verifying old column name no longer exists...")
 	oldQuerySQL := `SELECT id, name, email FROM ` + "`" + tableName + "`" + ` ORDER BY id`
 	_, err = client.Query(oldQuerySQL).Read(ctx)
 	if err == nil {
-		log.Fatalf("Old column name should not exist, but query succeeded")
+		t.Fatalf("Old column name should not exist, but query succeeded")
 	}
-	fmt.Println("✓ Old column name correctly no longer exists")
+	t.Log("✓ Old column name correctly no longer exists")
 
 	// Insert new data using the renamed column
-	fmt.Println("\n9. Inserting new data using renamed column...")
+	t.Log("9. Inserting new data using renamed column...")
 	insertNewSQL := `
 INSERT INTO ` + "`" + tableName + "`" + ` (id, full_name, email) 
 VALUES (3, 'Charlie', 'charlie@example.com')`
 	job, err = client.Query(insertNewSQL).Run(ctx)
 	if err != nil {
-		log.Fatalf("Failed to insert data with renamed column: %v", err)
+		t.Fatalf("Failed to insert data with renamed column: %v", err)
 	}
 	status, err = job.Wait(ctx)
 	if err != nil {
-		log.Fatalf("Failed to wait for insert with renamed column: %v", err)
+		t.Fatalf("Failed to wait for insert with renamed column: %v", err)
 	}
 	if err := status.Err(); err != nil {
-		log.Fatalf("Insert with renamed column failed: %v", err)
+		t.Fatalf("Insert with renamed column failed: %v", err)
 	}
-	fmt.Println("✓ New data inserted successfully with renamed column")
+	t.Log("✓ New data inserted successfully with renamed column")
 
 	// Final verification
-	fmt.Println("\n10. Final verification...")
+	t.Log("10. Final verification...")
 	it, err = client.Query(querySQL).Read(ctx)
 	if err != nil {
-		log.Fatalf("Failed to query final data: %v", err)
+		t.Fatalf("Failed to query final data: %v", err)
 	}
 
-	fmt.Println("Final data from table with renamed column:")
+	t.Log("Final data from table with renamed column:")
 	for {
 		var row []bigquery.Value
 		if err := it.Next(&row); err != nil {
 			if err == iterator.Done {
 				break
 			}
-			log.Fatalf("Failed to read row: %v", err)
+			t.Fatalf("Failed to read row: %v", err)
 		}
-		fmt.Printf("  ID: %v, Full Name: %v, Email: %v\n", row[0], row[1], row[2])
+		t.Logf("  ID: %v, Full Name: %v, Email: %v", row[0], row[1], row[2])
 	}
 
-	fmt.Println("\n=== ALTER TABLE RENAME COLUMN test completed successfully! ===")
+	t.Log("=== ALTER TABLE RENAME COLUMN test completed successfully! ===")
 }
+
